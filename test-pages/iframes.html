@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prueba: iframes</title>
+    <link rel="stylesheet" href="test.css" />
+  </head>
+  <body>
+    <h1>Campos dentro de iframes</h1>
+    <p>Iframe del mismo origen:</p>
+    <iframe id="same-origin" src="basic.html"></iframe>
+    <p>Iframe srcdoc con contenteditable:</p>
+    <iframe
+      id="srcdoc"
+      srcdoc="<body style='font:15px system-ui'><div id='inner-editable' contenteditable='true' style='border:1px solid #999;min-height:3em;padding:6px'></div></body>"
+    ></iframe>
+  </body>
+</html>

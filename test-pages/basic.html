@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prueba: campos básicos</title>
+    <link rel="stylesheet" href="test.css" />
+  </head>
+  <body>
+    <h1>Campos básicos</h1>
+    <label>Input de texto <input id="text-input" type="text" /></label>
+    <label>Input con texto previo <input id="prefilled-input" type="text" value="Hola mundo" /></label>
+    <label>Buscador <input id="search-input" type="search" /></label>
+    <label>Textarea <textarea id="textarea" rows="3"></textarea></label>
+    <label>Contenteditable <div id="editable" contenteditable="true"></div></label>
+    <label>Contraseña (no debe mostrar el botón) <input id="password" type="password" /></label>
+    <label>Solo lectura (no debe mostrar el botón) <input id="readonly" type="text" readonly value="fijo" /></label>
+    <label>Número (no debe mostrar el botón) <input id="number" type="number" /></label>
+    <p id="events"></p>
+    <script>
+      // Registro de eventos para verificar que se disparan input/change.
+      const log = [];
+      for (const type of ["beforeinput", "input", "change"]) {
+        document.addEventListener(type, (e) => {
+          log.push(type + ":" + (e.target.id || e.target.tagName));
+          document.getElementById("events").textContent = log.slice(-6).join(" · ");
+        }, true);
+      }
+      window.__eventLog = log;
+    </script>
+  </body>
+</html>

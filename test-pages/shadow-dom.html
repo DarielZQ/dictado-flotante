@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prueba: Shadow DOM</title>
+    <link rel="stylesheet" href="test.css" />
+  </head>
+  <body>
+    <h1>Input dentro de un web component</h1>
+    <fancy-field id="fancy"></fancy-field>
+    <script>
+      customElements.define(
+        "fancy-field",
+        class extends HTMLElement {
+          constructor() {
+            super();
+            const root = this.attachShadow({ mode: "open" });
+            root.innerHTML =
+              "<label style='display:block;font-weight:600'>Campo en shadow DOM " +
+              "<input id='shadow-input' style='display:block;width:100%;padding:8px;font:inherit'></label>";
+          }
+        },
+      );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+test-pages-dist/
+artifacts/
+web-ext-artifacts/
+tests/e2e/output/
+tests/audio/
+*.xpi
+.env
+.env.*
+!.env.example
+*.log

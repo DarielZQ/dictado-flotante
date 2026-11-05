@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dictado Flotante</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="../icons/icon.svg" alt="" width="24" height="24" />
+      <strong>Dictado Flotante</strong>
+    </header>
+    <p id="warning" class="warning hidden"></p>
+    <button id="dictate" type="button">Dictar ahora</button>
+    <label id="host-row" class="check">
+      <input id="show-here" type="checkbox" />
+      <span>Mostrar el botón en <b id="host"></b></span>
+    </label>
+    <p id="phase" class="muted"></p>
+    <a id="options" href="#">Opciones</a>
+    <script src="popup.js"></script>
+  </body>
+</html>

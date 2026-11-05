@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dictado Flotante · Opciones</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="../icons/icon.svg" alt="" width="40" height="40" />
+        <div>
+          <h1>Dictado Flotante</h1>
+          <p class="muted">Dicta en cualquier campo de texto de la web.</p>
+        </div>
+      </header>
+
+      <div id="banner-permission" class="banner hidden">
+        El botón no puede aparecer en las webs porque falta el permiso de acceso a los sitios.
+        <button id="grant-sites" type="button">Conceder acceso</button>
+      </div>
+
+      <section>
+        <h2>1. Servicio de transcripción</h2>
+        <p class="muted">
+          Por defecto se usa el plan gratuito de Groq. Crea una clave en
+          <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com → API Keys</a>
+          y pégala aquí.
+        </p>
+        <label>Clave API
+          <span class="row">
+            <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="gsk_…" />
+            <button id="toggle-key" type="button" class="secondary">Mostrar</button>
+          </span>
+        </label>
+        <p id="key-status" class="muted"></p>
+        <details>
+          <summary>Avanzado: otro proveedor compatible con OpenAI</summary>
+          <label>URL base <input id="base-url" type="url" spellcheck="false" /></label>
+          <label>Modelo <input id="model" type="text" spellcheck="false" /></label>
+          <label>Formato de respuesta
+            <select id="response-format">
+              <option value="verbose_json">verbose_json (recomendado)</option>
+              <option value="json">json</option>
+            </select>
+          </label>
+        </details>
+        <div class="row">
+          <button id="save-provider" type="button">Guardar</button>
+          <button id="test-provider" type="button" class="secondary">Probar conexión</button>
+        </div>
+        <p id="provider-status" class="status" role="status"></p>
+      </section>
+
+      <section>
+        <h2>2. Micrófono</h2>
+        <p class="muted">
+          Concede el acceso una vez y marca «Recordar esta decisión». Así el dictado funciona en cualquier web
+          sin volver a preguntar.
+        </p>
+        <div class="row">
+          <button id="grant-mic" type="button">Conceder acceso al micrófono</button>
+          <select id="device" aria-label="Micrófono"></select>
+        </div>
+        <meter id="mic-level" min="0" max="1" value="0" aria-label="Nivel del micrófono"></meter>
+        <p id="mic-status" class="status" role="status"></p>
+        <label>Estrategia de captura
+          <select id="capture-strategy">
+            <option value="auto">Automática (recomendada)</option>
+            <option value="background">Extensión en segundo plano</option>
+            <option value="extension-iframe">Marco de la extensión dentro de la página</option>
+            <option value="content-script">Página web (pide permiso por sitio)</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <h2>3. Dictado</h2>
+        <label>Idioma <select id="language"></select></label>
+        <label>Vocabulario o contexto (opcional)
+          <textarea id="prompt" rows="2" maxlength="800" placeholder="Nombres propios o términos técnicos que uses a menudo"></textarea>
+        </label>
+        <label class="check"><input id="auto-stop" type="checkbox" /> Parar automáticamente al dejar de hablar</label>
+        <div class="grid">
+          <label>Silencio para parar (ms) <input id="silence-ms" type="number" min="800" max="10000" step="100" /></label>
+          <label>Duración máxima (ms) <input id="max-ms" type="number" min="10000" max="600000" step="1000" /></label>
+          <label>Sin voz, cancelar a los (ms) <input id="no-speech-ms" type="number" min="2000" max="30000" step="500" /></label>
+        </div>
+        <label class="check"><input id="smart" type="checkbox" /> Formato inteligente (espacios y mayúsculas)</label>
+        <label class="check"><input id="hallucination" type="checkbox" /> Filtrar frases inventadas con silencio</label>
+        <label>Tamaño del botón (px) <input id="button-size" type="number" min="32" max="72" step="2" /></label>
+        <button id="save-dictation" type="button">Guardar</button>
+        <p id="dictation-status" class="status" role="status"></p>
+      </section>
+
+      <section>
+        <h2>4. Probar dictado</h2>
+        <p class="muted">Graba una frase y el resultado aparecerá aquí abajo.</p>
+        <div class="row">
+          <button id="test-record" type="button">Empezar a grabar</button>
+        </div>
+        <textarea id="test-output" rows="3" placeholder="Aquí aparecerá el texto transcrito"></textarea>
+        <p id="test-status" class="status" role="status"></p>
+      </section>
+
+      <section>
+        <h2>5. Sitios ocultos</h2>
+        <ul id="hidden-hosts"></ul>
+        <p id="no-hidden" class="muted">No hay sitios ocultos.</p>
+      </section>
+
+      <section>
+        <h2>Atajo de teclado</h2>
+        <p class="muted">
+          <kbd>Alt</kbd>+<kbd>Mayús</kbd>+<kbd>D</kbd> empieza o detiene el dictado; <kbd>Esc</kbd> lo cancela.
+          Puedes cambiar el atajo en <code>about:addons</code> → engranaje → «Administrar atajos de extensiones».
+        </p>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>
