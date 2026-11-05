@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  define: { __DEV__: "false" },
+  define: { __DEV__: "false", __E2E__: "false" },
   test: {
     environment: "jsdom",
     include: ["tests/unit/**/*.test.ts"],

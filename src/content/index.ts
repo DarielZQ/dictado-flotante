@@ -206,6 +206,17 @@ function main(): void {
     return undefined;
   });
 
+  // Solo en el build de pruebas (dist-e2e): puente para que Selenium configure la extensión.
+  if (__E2E__ && isTop) {
+    window.addEventListener("message", (e: MessageEvent) => {
+      const data = e.data as { __dictadoE2E?: unknown } | null;
+      if (e.source !== window || !data || typeof data !== "object" || !("__dictadoE2E" in data)) return;
+      void browser.runtime
+        .sendMessage({ type: "e2e/configure", ...(data.__dictadoE2E as object) })
+        .then((result: unknown) => window.postMessage({ __dictadoE2EDone: JSON.parse(JSON.stringify(result)) }, "*"));
+    });
+  }
+
   if (isTop) {
     void (send({ type: "settings/get-public" }) as Promise<PublicSettings | undefined>).then((s) => {
       if (!s) return;

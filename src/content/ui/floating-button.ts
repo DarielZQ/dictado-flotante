@@ -247,7 +247,8 @@ export class FloatingButton {
       this.deps.onOpenOptions();
       return;
     }
-    if (this.phase === "success" || this.phase === "inserting") return;
+    // Durante el check verde o el aviso de error, un clic empieza un dictado nuevo.
+    if (this.phase === "inserting") return;
     this.deps.onActivate();
   }
 

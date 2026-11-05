@@ -22,6 +22,8 @@ describe("formatForInsertion", () => {
     ["tras exclamación pegada", "vale.", "ya!", "", " Vale."],
     ["texto vacío", "   ", "abc", "def", ""],
     ["inicio de campo en minúscula", "hola.", "", "", "Hola."],
+    ["a mitad de frase: sin punto final", "Desde aquí.", "Hola", " mundo", " desde aquí"],
+    ["antes de mayúscula: conserva el punto", "Fin.", "", " Otra", "Fin."],
   ];
 
   it.each(cases)("%s", (_desc, text, before, after, expected) => {

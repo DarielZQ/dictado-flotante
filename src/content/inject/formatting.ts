@@ -39,9 +39,11 @@ export function formatForInsertion(raw: string, ctx: InsertionContext, smart: bo
   if (prev === null || [".", "!", "?", "…", "\n"].includes(prev)) {
     text = text.charAt(0).toLocaleUpperCase() + text.slice(1);
   }
-  // (f) evitar doble puntuación
+  // (f) evitar doble puntuación, y no cerrar la frase si continúa en minúscula
   const afterFirst = ctx.after.charAt(0);
-  if (TRAILING_PUNCT.has(afterFirst) && text.endsWith(".")) {
+  const afterWord = ctx.after.trimStart().charAt(0);
+  const continuesLowercase = afterWord !== "" && afterWord !== afterWord.toLocaleUpperCase();
+  if ((TRAILING_PUNCT.has(afterFirst) || continuesLowercase) && text.endsWith(".")) {
     text = text.slice(0, -1);
   }
   // (b) espacio inicial

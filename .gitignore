@@ -10,3 +10,6 @@ tests/audio/
 .env.*
 !.env.example
 *.log
+dist-e2e/
+artifacts-e2e/
+tests/e2e/e2e.log

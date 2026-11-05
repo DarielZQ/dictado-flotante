@@ -1,6 +1,7 @@
 import { DictationError } from "../shared/errors";
 import { createLogger } from "../shared/logger";
 import type { AutoStopReason, CaptureOptions } from "../shared/messages";
+import { createFakeSpeechStream } from "./fake-speech";
 import { pickMimeType } from "./mime";
 import { DEFAULT_VAD, rmsToDb, VoiceActivityDetector } from "./vad";
 
@@ -55,6 +56,7 @@ export class AudioRecorder {
   private startedAt = 0;
   private mimeType = "";
   private autoStopFired = false;
+  private closeFake: (() => void) | null = null;
 
   constructor(private readonly events: AudioRecorderEvents) {}
 
@@ -73,7 +75,13 @@ export class AudioRecorder {
     if (opts.deviceId) audio.deviceId = { exact: opts.deviceId };
 
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio });
+      if (__E2E__ && (globalThis as { __dictadoFakeSpeech?: boolean }).__dictadoFakeSpeech) {
+        const fake = createFakeSpeechStream();
+        this.stream = fake.stream;
+        this.closeFake = fake.close;
+      } else {
+        this.stream = await navigator.mediaDevices.getUserMedia({ audio });
+      }
     } catch (err) {
       // Si el dispositivo guardado ya no existe, reintenta con el predeterminado.
       if (opts.deviceId && err instanceof DOMException && err.name === "OverconstrainedError") {
@@ -179,6 +187,8 @@ export class AudioRecorder {
     this.maxTimer = null;
     this.stream?.getTracks().forEach((t) => t.stop());
     this.stream = null;
+    this.closeFake?.();
+    this.closeFake = null;
     void this.context?.close().catch(() => undefined);
     this.context = null;
     this.recorder = null;

@@ -106,6 +106,7 @@ export class DictationController {
           return;
         }
         log.info("Captura iniciada con la estrategia", strategy);
+        if (__E2E__) (globalThis as { __dictadoLastStrategy?: string }).__dictadoLastStrategy = strategy;
         this.capture = host;
         lastError = null;
         break;

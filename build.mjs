@@ -5,9 +5,11 @@ import { cp, mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 const watch = process.argv.includes("--watch");
+// --e2e: build de pruebas en dist-e2e con un puente de configuración para Selenium.
+const e2e = process.argv.includes("--e2e");
 const root = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
 const src = path.join(root, "src");
-const dist = path.join(root, "dist");
+const dist = path.join(root, e2e ? "dist-e2e" : "dist");
 
 const entries = {
   "background/index": "src/background/index.ts",
@@ -37,7 +39,7 @@ const common = {
   format: "iife",
   target: "firefox140",
   logLevel: "info",
-  define: { __DEV__: watch ? "true" : "false" },
+  define: { __DEV__: watch || e2e ? "true" : "false", __E2E__: e2e ? "true" : "false" },
   sourcemap: watch ? "inline" : false,
   minify: !watch,
   legalComments: "none",

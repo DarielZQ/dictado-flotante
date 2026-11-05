@@ -225,6 +225,25 @@ async function handle(msg: AnyToBackground, sender: browser.runtime.MessageSende
 
 browser.runtime.onMessage.addListener((raw: unknown, sender: browser.runtime.MessageSender) => {
   if (sender.id !== browser.runtime.id) return undefined;
+  // Solo en el build de pruebas (dist-e2e): Selenium no puede abrir páginas de la extensión en Firefox.
+  if (__E2E__ && (raw as { type?: string })?.type === "e2e/configure") {
+    const { patch, apiKey, fakeSpeech } = raw as {
+      patch?: Parameters<typeof saveSettings>[0];
+      apiKey?: string;
+      fakeSpeech?: boolean;
+    };
+    if (fakeSpeech !== undefined) (globalThis as { __dictadoFakeSpeech?: boolean }).__dictadoFakeSpeech = fakeSpeech;
+    return (async () => {
+      if (apiKey !== undefined) await setApiKey(apiKey);
+      const settings = patch ? await updateSettings(patch) : await getSettings();
+      const provider = createProvider(settings, await getApiKey());
+      const test = await provider.testConnection(AbortSignal.timeout(5000)).then(
+        () => ok(true),
+        (err: unknown) => fail(asUserFacing(err)),
+      );
+      return { settings, test, lastStrategy: (globalThis as { __dictadoLastStrategy?: string }).__dictadoLastStrategy };
+    })();
+  }
   if (!isBackgroundMessage(raw)) return undefined;
   // Los mensajes privilegiados solo se aceptan de páginas de la extensión, nunca de content scripts.
   if (PRIVILEGED_TYPES.has(raw.type) && sender.tab && !sender.url?.startsWith(browser.runtime.getURL(""))) {
