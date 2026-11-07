@@ -25,7 +25,7 @@
     "description": "Host de dictado para aplicaciones de escritorio",
     "path": "C:\\Users\\<Usuario>\\AppData\\Local\\DictadoFlotante\\host.exe",
     "type": "stdio",
-    "allowed_extensions": ["dictado-flotante@extension.local"]
+    "allowed_extensions": ["{5cdec31d-f472-4fb6-bac6-87363a517f97}"]
   }
   ```
 

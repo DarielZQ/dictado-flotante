@@ -11,7 +11,15 @@
       <strong>Dictado Flotante</strong>
     </header>
     <p id="warning" class="warning hidden"></p>
+    <p id="mic-warning" class="warning hidden">
+      El micrófono no está concedido a la extensión, así que algunas webs te pedirán permiso.
+      <a id="mic-fix" href="#">Concederlo en Opciones</a>
+    </p>
     <button id="dictate" type="button">Dictar ahora</button>
+    <label class="field">
+      <span>Idioma del dictado</span>
+      <select id="language"></select>
+    </label>
     <label id="host-row" class="check">
       <input id="show-here" type="checkbox" />
       <span>Mostrar el botón en <b id="host"></b></span>

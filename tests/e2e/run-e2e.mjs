@@ -7,6 +7,7 @@
 import { Builder, By, until } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox.js";
 import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
 import { mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +16,8 @@ import { startServer } from "../../tools/serve-test-pages.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const outDir = path.join(root, "tests/e2e/output");
 const headed = process.argv.includes("--headed");
-const EXT_ID = "dictado-flotante@extension.local";
+// El ID se lee del manifiesto para que la prueba siga funcionando si alguien lo cambia.
+const EXT_ID = JSON.parse(readFileSync(path.join(root, "src/manifest.json"), "utf8")).browser_specific_settings.gecko.id;
 const EXT_UUID = "5d3c9a2e-7b1f-4c55-9e2a-1f0b8c6d4e21";
 const PAGES = "http://127.0.0.1:5173/test-pages";
 const MOCK_PORT = 5174;
@@ -47,6 +49,7 @@ function startMockStt() {
           auth: req.headers.authorization,
           model: field("model"),
           language: field("language"),
+          prompt: field("prompt"),
           format: field("response_format"),
           fileType: /name="file"; filename="([^"]+)"\r\nContent-Type: ([^\r]+)/.exec(text)?.slice(1),
         });
@@ -123,6 +126,31 @@ async function hostAtButton(driver) {
     x,
     y,
   );
+}
+
+/** Texto de un elemento de la UI (shadow root abierto solo en el build de pruebas). */
+async function uiText(driver, selector) {
+  return driver.executeScript(
+    "const r = document.querySelector('[data-dictado-flotante]')?.shadowRoot; return r?.querySelector(arguments[0])?.textContent ?? null;",
+    selector,
+  );
+}
+
+/** Clic derecho en el botón y clic real en el idioma pedido del menú. */
+async function pickLanguage(driver, code) {
+  const { x, y } = await buttonPoint(driver);
+  await driver.actions({ async: true }).move({ x, y, origin: "viewport" }).contextClick().perform();
+  await sleep(300);
+  const rect = await driver.executeScript(
+    "const r = document.querySelector('[data-dictado-flotante]')?.shadowRoot;" +
+      "const el = r?.querySelector('button.df-lang[data-lang=\"' + arguments[0] + '\"]');" +
+      "if (!el || !el.offsetParent) return null; const b = el.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2];",
+    code,
+  );
+  if (!rect) return false;
+  await driver.actions({ async: true }).move({ x: Math.round(rect[0]), y: Math.round(rect[1]), origin: "viewport" }).press().release().perform();
+  await sleep(400);
+  return true;
 }
 
 async function waitFor(fn, timeoutMs = 10000, every = 150) {
@@ -291,6 +319,45 @@ async function run() {
     await sleep(1200);
     const cancelled = await driver.executeScript("return document.getElementById('search-input').value");
     record("Esc cancela sin transcribir", cancelled === "" && stt.requests.length === before);
+
+    // --- Idioma: menú del clic derecho y modo mixto ---
+    const badge = '[data-testid="dictado-language"]';
+    await driver.executeScript("document.getElementById('text-input').value = ''; document.getElementById('text-input').focus()");
+    await sleep(500);
+    record("El botón muestra la etiqueta ES", (await uiText(driver, badge)) === "ES");
+    const opened = await pickLanguage(driver, "en");
+    const focusAfterMenu = await driver.executeScript("return document.activeElement && document.activeElement.id");
+    record("El clic derecho abre el menú sin quitar el foco", opened && focusAfterMenu === "text-input", `foco: ${focusAfterMenu}`);
+    record("Menú → Inglés cambia la etiqueta a EN", Boolean(await waitFor(async () => (await uiText(driver, badge)) === "EN", 3000)));
+    await shot(driver, "06-idioma-en");
+    record("El idioma queda guardado", (await configure(driver, {}))?.settings?.language === "en");
+    let mark = stt.requests.length;
+    await dictateInto(
+      driver,
+      "const el = document.getElementById('text-input'); el.value = ''; el.focus();",
+      "return document.getElementById('text-input').value",
+    );
+    record("Dictado en inglés envía language=en", stt.requests[mark]?.language === "en", JSON.stringify(stt.requests[mark]?.language));
+
+    await driver.executeScript("document.getElementById('text-input').focus()");
+    await sleep(400);
+    await pickLanguage(driver, "es+en");
+    record("Menú → Mixto cambia la etiqueta a ES+EN", Boolean(await waitFor(async () => (await uiText(driver, badge)) === "ES+EN", 3000)));
+    await shot(driver, "07-idioma-mixto");
+    mark = stt.requests.length;
+    await dictateInto(
+      driver,
+      "const el = document.getElementById('text-input'); el.value = ''; el.focus();",
+      "return document.getElementById('text-input').value",
+    );
+    const mixedReq = stt.requests[mark];
+    record(
+      "Modo mixto envía language=es y la pista bilingüe",
+      mixedReq?.language === "es" && Boolean(mixedReq?.prompt?.includes("I will send you the link")),
+      JSON.stringify({ language: mixedReq?.language, prompt: mixedReq?.prompt?.slice(0, 40) }),
+    );
+    await configure(driver, { patch: { language: "es" } });
+    record("Los ajustes actualizan la etiqueta en la página", Boolean(await waitFor(async () => (await uiText(driver, badge)) === "ES", 3000)));
 
     // --- React ---
     await driver.get(`${PAGES}/react/index.html`);

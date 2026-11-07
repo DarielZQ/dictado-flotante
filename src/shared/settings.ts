@@ -45,16 +45,7 @@ export const SETTINGS_STORAGE = "settings";
 export const SECRET_KEY_STORAGE = "secret.apiKey";
 export const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
-export const LANGUAGES: ReadonlyArray<{ code: string; label: string }> = [
-  { code: "es", label: "Español" },
-  { code: "en", label: "Inglés" },
-  { code: "pt", label: "Portugués" },
-  { code: "fr", label: "Francés" },
-  { code: "de", label: "Alemán" },
-  { code: "it", label: "Italiano" },
-  { code: "ca", label: "Catalán" },
-  { code: "auto", label: "Detección automática" },
-];
+export { LANGUAGES } from "./languages";
 
 export const DEFAULT_SETTINGS: Settings = {
   schemaVersion: 1,

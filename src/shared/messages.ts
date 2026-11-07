@@ -41,6 +41,7 @@ export type ContentToBackground =
   | { type: "settings/get-public" }
   | { type: "ui/hide-host"; host: string }
   | { type: "ui/save-position"; host: string; xPct: number; yPct: number }
+  | { type: "ui/set-language"; language: string }
   | { type: "clipboard/write"; text: string }
   | { type: "open-options" };
 
@@ -112,6 +113,7 @@ const BACKGROUND_TYPES = new Set<string>([
   "settings/get-public",
   "ui/hide-host",
   "ui/save-position",
+  "ui/set-language",
   "clipboard/write",
   "open-options",
   "settings/get",

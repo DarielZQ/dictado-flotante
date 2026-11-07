@@ -1,4 +1,5 @@
 import type { UserFacingError } from "../../shared/errors";
+import { findLanguage, QUICK_LANGUAGES, shortLabel } from "../../shared/languages";
 import type { DictationPhase } from "../../shared/state";
 import { UI_STRINGS } from "../../shared/strings";
 import { clampToViewport, fromPct, makeDraggable, toPct, type Position } from "./drag";
@@ -9,7 +10,9 @@ export interface FloatingButtonDeps {
   root: ShadowRoot;
   initialPosition: Position | null;
   sizePx: number;
+  language: string;
   onActivate(): void;
+  onSelectLanguage(code: string): void;
   onHideForSite(): void;
   onOpenOptions(): void;
   onPositionChange(pos: Position): void;
@@ -53,6 +56,8 @@ export class FloatingButton {
   private readonly toastEl: HTMLDivElement;
   private readonly menu: HTMLDivElement;
   private readonly live: HTMLDivElement;
+  private readonly badge: HTMLSpanElement;
+  private language: string;
   private phase: DictationPhase = "idle";
   private visible = false;
   private left = 0;
@@ -80,8 +85,13 @@ export class FloatingButton {
     this.menu = this.el("div", "df-menu df-hidden");
     this.live = this.el("div", "df-sr");
     this.live.setAttribute("aria-live", "polite");
+    this.badge = this.el("span", "df-badge");
+    this.badge.setAttribute("aria-hidden", "true");
+    this.badge.setAttribute("data-testid", "dictado-language");
+    this.language = deps.language;
 
     this.buildMenu();
+    this.menu.addEventListener("pointerdown", (e) => e.preventDefault());
     this.container.append(this.button, this.tooltip, this.toastEl, this.menu, this.live);
     deps.root.appendChild(this.container);
 
@@ -96,6 +106,10 @@ export class FloatingButton {
         this.schedulePositionSave();
       },
     });
+    // El clic derecho tampoco debe quitar el foco al campo (si no, el botón y el menú se ocultan).
+    this.button.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) e.preventDefault();
+    });
     this.button.addEventListener("contextmenu", this.onContextMenu);
     this.win.addEventListener("resize", this.onResize);
     this.doc.addEventListener("pointerdown", this.onDocPointerDown, true);
@@ -108,6 +122,27 @@ export class FloatingButton {
   }
 
   private buildMenu(): void {
+    const title = this.el("div", "df-menu-title");
+    title.textContent = UI_STRINGS.menuLanguage;
+    const codes = QUICK_LANGUAGES.includes(this.language) ? QUICK_LANGUAGES : [...QUICK_LANGUAGES, this.language];
+    const langButtons = codes.map((code) => {
+      const item = this.el("button", "df-lang");
+      const active = code === this.language;
+      item.setAttribute("role", "menuitemradio");
+      item.setAttribute("aria-checked", String(active));
+      item.dataset.lang = code;
+      item.textContent = `${active ? "✓ " : ""}${findLanguage(code)?.label ?? code}`;
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.closeMenu();
+        if (code !== this.language) {
+          this.setLanguage(code);
+          this.deps.onSelectLanguage(code);
+        }
+      });
+      return item;
+    });
+    const sep = this.el("div", "df-menu-sep");
     const hide = this.el("button", "");
     hide.textContent = UI_STRINGS.menuHide;
     hide.addEventListener("click", (e) => {
@@ -122,8 +157,15 @@ export class FloatingButton {
       this.closeMenu();
       this.deps.onOpenOptions();
     });
-    this.menu.append(hide, options);
-    this.menu.addEventListener("pointerdown", (e) => e.preventDefault());
+    this.menu.replaceChildren(title, ...langButtons, sep, hide, options);
+  }
+
+  /** Actualiza el idioma mostrado en la etiqueta y en el menú. */
+  setLanguage(code: string): void {
+    if (code === this.language) return;
+    this.language = code;
+    this.buildMenu();
+    this.render();
   }
 
   // ---------- Posición ----------
@@ -227,10 +269,13 @@ export class FloatingButton {
   private render(): void {
     this.button.dataset.phase = this.phase;
     this.button.classList.toggle("df-visible", this.shouldShow());
-    this.button.setAttribute("aria-label", LABELS[this.phase]);
+    const langLabel = findLanguage(this.language)?.label ?? this.language;
+    this.button.setAttribute("aria-label", `${LABELS[this.phase]} (${langLabel})`);
     this.button.setAttribute("aria-pressed", String(this.phase === "listening"));
-    this.button.title = this.phase === "error" && this.lastError ? this.lastError.message : LABELS[this.phase];
-    this.button.replaceChildren(iconFor(this.phase, this.doc));
+    this.button.title =
+      this.phase === "error" && this.lastError ? this.lastError.message : `${LABELS[this.phase]} · ${langLabel}`;
+    this.badge.textContent = shortLabel(this.language);
+    this.button.replaceChildren(iconFor(this.phase, this.doc), this.badge);
 
     if (this.phase === "error" && this.lastError) {
       this.tooltip.textContent = this.lastError.message;

@@ -29,6 +29,7 @@ export const UI_STRINGS = {
   labelInserting: "Insertando texto…",
   labelSuccess: "Texto insertado",
   labelError: "Error en el dictado",
+  menuLanguage: "Idioma del dictado",
   menuHide: "Ocultar en este sitio",
   menuOptions: "Opciones",
   toastFocusField: "Enfoca un campo de texto para dictar.",

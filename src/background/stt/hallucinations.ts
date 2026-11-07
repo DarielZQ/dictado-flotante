@@ -24,7 +24,7 @@ export function normalizeForMatch(text: string): string {
 }
 
 /** Devuelve el texto final o "" si todo es una alucinación. */
-export function filterHallucinations(result: TranscriptionResult, speechMs: number): string {
+export function filterHallucinations(result: TranscriptionResult, speechMs: number, prompt?: string): string {
   let text = result.text;
   if (result.segments && result.segments.length > 0) {
     const kept = result.segments.filter(
@@ -39,5 +39,9 @@ export function filterHallucinations(result: TranscriptionResult, speechMs: numb
   if (normalized === "") return "";
   if (KNOWN_HALLUCINATIONS.has(normalized)) return "";
   if (normalized === "gracias" && speechMs < 1500) return "";
+  // Con poco audio, Whisper a veces repite la pista (prompt) en lugar de transcribir.
+  if (prompt && speechMs < 3000 && normalized.split(" ").length >= 3 && normalizeForMatch(prompt).includes(normalized)) {
+    return "";
+  }
   return text;
 }

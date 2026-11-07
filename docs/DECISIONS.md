@@ -62,3 +62,20 @@ Si después del cursor la frase continúa en minúscula, se quita el punto final
 ### T5 — Advertencia de `web-ext lint`
 
 Queda una advertencia por `data_collection_permissions` en Firefox para Android (requiere 142). La extensión es solo de escritorio; no se declara `gecko_android`.
+
+### T6 — Modo mixto español + inglés
+
+Whisper admite un solo `language` por petición. Se calibró con frases generadas con voces de Windows (español puro, inglés puro, *spanglish* y frases que cambian de idioma) contra Groq `whisper-large-v3-turbo`:
+
+| Ajuste | Español | Inglés | *Spanglish* | Inglés → español |
+|---|---|---|---|---|
+| `language=es` | ✔ | ✘ (traduce mal) | ✔ | ✘ (traduce el inglés) |
+| automático | ✔ | ✔ | ✔ | ✘ (traduce el inglés) |
+| `language=es` + pista bilingüe | ✔ | ✔ | ✔ | ✔ |
+| automático + pista bilingüe | ✔ | ✔ | ✔ | ✔ |
+
+La pista (`prompt`) es un ejemplo que empieza en inglés y cambia al español. El modo mixto (`es+en`) envía `language=es` con esa pista: da el mismo resultado que el automático y evita que en frases cortas se detecte un idioma parecido (portugués, gallego). Si con poco audio Whisper devuelve un trozo de la pista, el filtro de alucinaciones lo descarta.
+
+### T7 — Permiso de micrófono por página
+
+La estrategia `background` usa el permiso de micrófono de la propia extensión (origen `moz-extension://<uuid>`). Un complemento temporal recibe un UUID nuevo en cada carga y pierde ese permiso, así que el modo `auto` pasa al respaldo y la página pide su propio permiso. Con la extensión instalada y firmada el UUID es estable: basta concederlo una vez en Opciones. El popup y Opciones avisan cuando falta.

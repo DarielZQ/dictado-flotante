@@ -2,6 +2,7 @@ import { asUserFacing, isUserFacingError } from "../shared/errors";
 import type { Result, UiToBackground } from "../shared/messages";
 import { LANGUAGES, normalizeBaseUrl, GROQ_BASE_URL, type Settings } from "../shared/settings";
 import { AudioRecorder } from "../recorder/recorder";
+import { extensionMicState } from "../shared/mic-permission";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -20,6 +21,13 @@ let settings: Settings;
 async function refreshKeyStatus(): Promise<void> {
   const has = await call<boolean>({ type: "secret/has-api-key" });
   $("key-status").textContent = has ? "Clave guardada ✓" : "Todavía no hay ninguna clave guardada.";
+}
+
+async function refreshMicStatus(): Promise<void> {
+  const state = await extensionMicState();
+  if (state === "granted") setStatus("mic-status", "Micrófono concedido a la extensión ✓", "ok");
+  else if (state === "denied") setStatus("mic-status", "Micrófono bloqueado: cámbialo con el icono del micrófono de la barra de direcciones.", "err");
+  else if (state === "prompt") setStatus("mic-status", "Micrófono sin conceder: pulsa el botón y marca «Recordar esta decisión».", "err");
 }
 
 async function refreshPermissionBanner(): Promise<void> {
@@ -260,7 +268,7 @@ async function init(): Promise<void> {
   }
   settings = await call<Settings>({ type: "settings/get" });
   fill(settings);
-  await Promise.all([refreshKeyStatus(), refreshPermissionBanner(), listDevices()]);
+  await Promise.all([refreshKeyStatus(), refreshPermissionBanner(), listDevices(), refreshMicStatus()]);
 
   $("toggle-key").addEventListener("click", () => {
     const input = $<HTMLInputElement>("api-key");

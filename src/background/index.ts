@@ -1,6 +1,7 @@
 // Punto de entrada del background (event page no persistente de Firefox MV3).
 // Todos los listeners se registran de forma síncrona en el nivel superior.
 import { asUserFacing, DictationError, toUserFacing } from "../shared/errors";
+import { isKnownLanguage } from "../shared/languages";
 import { createLogger, setLogLevel } from "../shared/logger";
 import {
   fail,
@@ -156,6 +157,11 @@ async function handle(msg: AnyToBackground, sender: browser.runtime.MessageSende
       });
       return null;
     }
+    case "ui/set-language":
+      // Desde la página solo se acepta un idioma de la lista: nada más de los ajustes.
+      if (!isKnownLanguage(msg.language)) return null;
+      await updateSettings({ language: msg.language });
+      return null;
     case "clipboard/write":
       return writeClipboard(msg.text);
     case "open-options":

@@ -9,7 +9,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "dictado-flotante@extension.local",
+      "id": "{5cdec31d-f472-4fb6-bac6-87363a517f97}",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": ["personalCommunications"]

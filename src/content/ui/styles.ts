@@ -32,6 +32,22 @@ export const UI_CSS = `
 .df-btn.df-visible { opacity: 1; transform: scale(1); pointer-events: auto; }
 .df-btn.df-dragging { cursor: grabbing; transition: none; }
 .df-btn svg { width: 55%; height: 55%; pointer-events: none; }
+.df-badge {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  min-width: 18px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  border: 1.5px solid #fff;
+  background: #0f172a;
+  color: #fff;
+  font: 700 9px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: .02em;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
 .df-btn::after {
   content: "";
   position: absolute;
@@ -90,6 +106,9 @@ export const UI_CSS = `
   box-sizing: border-box;
 }
 .df-menu button:hover, .df-menu button:focus-visible { background: #1e293b; }
+.df-menu-title { padding: 6px 10px 2px; font-size: 11px; font-weight: 600; opacity: .7; text-transform: uppercase; letter-spacing: .04em; }
+.df-menu button.df-lang[aria-checked="true"] { font-weight: 600; }
+.df-menu-sep { height: 1px; margin: 4px 6px; background: currentColor; opacity: .2; }
 .df-hidden { display: none !important; }
 .df-sr { position: fixed; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (prefers-color-scheme: dark) {

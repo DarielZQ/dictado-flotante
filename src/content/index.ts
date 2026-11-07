@@ -69,7 +69,8 @@ function main(): void {
     host.style.cssText =
       "all: initial !important; position: fixed !important; top: 0 !important; left: 0 !important; " +
       "width: 0 !important; height: 0 !important; z-index: 2147483647 !important;";
-    uiRoot = host.attachShadow({ mode: "closed" });
+    // Abierto solo en el build de pruebas, para que Selenium pueda leer la UI.
+    uiRoot = host.attachShadow({ mode: __E2E__ ? "open" : "closed" });
     (document.documentElement ?? document.body).appendChild(host);
 
     // Algunos sitios reconstruyen el DOM: vuelve a insertar el host si desaparece.
@@ -88,7 +89,9 @@ function main(): void {
       root: uiRoot,
       initialPosition: s.ui.positions[hostKey()] ?? null,
       sizePx: s.ui.buttonSizePx,
+      language: s.language,
       onActivate: () => void send({ type: "dictation/toggle" }),
+      onSelectLanguage: (language) => void send({ type: "ui/set-language", language }),
       onHideForSite: () => {
         void send({ type: "ui/hide-host", host: hostKey() });
         button?.setVisible(false);
@@ -193,6 +196,7 @@ function main(): void {
         return undefined;
       case "ui/settings-changed":
         settings = msg.settings;
+        button?.setLanguage(msg.settings.language);
         if (isHiddenHere()) button?.setVisible(false);
         else if (fieldFocused) button?.setVisible(true);
         return undefined;

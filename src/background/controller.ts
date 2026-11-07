@@ -1,4 +1,5 @@
 import { asUserFacing, DictationError, isAbortError, toUserFacing, type UserFacingError } from "../shared/errors";
+import { resolveLanguage } from "../shared/languages";
 import { createLogger } from "../shared/logger";
 import type { AutoStopReason, BackgroundToContent, InsertResult } from "../shared/messages";
 import type { CaptureStrategy, Settings } from "../shared/settings";
@@ -208,19 +209,20 @@ export class DictationController {
     const apiKey = await this.deps.getApiKey();
     const provider = this.deps.createProvider(settings, apiKey);
     this.abort = new AbortController();
+    const lang = resolveLanguage(settings.language, settings.prompt);
     try {
       const req = {
         audio: audio.blob,
         mimeType: audio.mimeType,
         filename: `audio.${extensionForMime(audio.mimeType)}`,
-        language: settings.language,
         durationMs: audio.durationMs,
-        ...(settings.prompt ? { prompt: settings.prompt } : {}),
+        language: lang.language ?? "auto",
+        ...(lang.prompt ? { prompt: lang.prompt } : {}),
       };
       const result = await provider.transcribe(req, this.abort.signal);
       log.info(`Transcripción en ${result.latencyMs} ms`);
       return settings.hallucinationFilter
-        ? filterHallucinations(result, audio.speechMs)
+        ? filterHallucinations(result, audio.speechMs, lang.prompt)
         : result.text.replace(/\s+/g, " ").trim();
     } finally {
       this.abort = null;

@@ -166,3 +166,15 @@ describe("DictationController", () => {
     expect(t.controller.current?.tabId).toBe(8);
   });
 });
+
+describe("DictationController: idioma", () => {
+  it("en modo mixto envía language=es con la pista bilingüe y el vocabulario", async () => {
+    const { MIXED_ES_EN, MIXED_PROMPT } = await import("../../src/shared/languages");
+    const t = setup({ getSettings: async () => ({ ...DEFAULT_SETTINGS, language: MIXED_ES_EN, prompt: "Groq" }) });
+    await t.controller.toggle(7);
+    await t.controller.toggle(7);
+    const req = (t.provider.transcribe as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as { language: string; prompt: string };
+    expect(req.language).toBe("es");
+    expect(req.prompt).toBe(`${MIXED_PROMPT} Groq`);
+  });
+});
