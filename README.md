@@ -19,6 +19,8 @@ Necesitas Firefox 140 o superior (escritorio).
 
 La extensión está firmada por Mozilla: queda instalada para siempre y se mantiene al reiniciar Firefox.
 
+> Si todavía no hay ninguna versión publicada en Releases, compílala tú mismo siguiendo la sección [Desarrollo](#desarrollo): puedes cargarla como complemento temporal o [firmar tu propia copia](#firmar-tu-propia-copia).
+
 ### 2. Consigue tu clave gratuita de Groq
 
 1. Entra en [console.groq.com](https://console.groq.com) e inicia sesión (con Google, GitHub o correo).
